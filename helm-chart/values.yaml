@@ -1,0 +1,56 @@
+# Application configuration
+app:
+  name: gitops-web-app
+  repository: jaihirani/gitops-web-app
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 5000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  env:
+    - name: DB_HOST
+      value: "gitops-web-app-mysql"
+    - name: DB_PORT
+      value: "3306"
+    - name: DB_USER
+      value: "root"
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: mysql-secret
+          key: mysql-root-password
+    - name: DB_NAME
+      value: "itemsdb"
+
+# MySQL configuration
+mysql:
+  enabled: true
+  auth:
+    rootPassword: "supersecretpassword"
+    database: "itemsdb"
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+
+# Health checks
+healthcheck:
+  enabled: true
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 5
